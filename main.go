@@ -16,6 +16,7 @@ type apiConfig struct {
 	fileserverHits atomic.Int32
 	db             *database.Queries
 	platform       string
+	jwtSecret      string
 }
 
 func main() {
@@ -30,17 +31,20 @@ func main() {
 		log.Fatal("PLATFORM environment variable is not set")
 	}
 
+	jwtSecret := os.Getenv("JWT_SECRET")
+
 	dbConn, err := sql.Open("postgres", dbURL)
 	if err != nil {
-		log.Fatal("Error opening database: %s", err)
+		log.Fatal("Error opening database:", err)
 	}
 
 	dbQueries := database.New(dbConn)
 
 	mux := http.NewServeMux()
 	apiCfg := &apiConfig{
-		db:       dbQueries,
-		platform: platform,
+		db:        dbQueries,
+		platform:  platform,
+		jwtSecret: jwtSecret,
 	}
 
 	handler := http.StripPrefix("/app", http.FileServer(http.Dir(".")))
@@ -57,7 +61,12 @@ func main() {
 	mux.HandleFunc("POST /api/chirps", apiCfg.handlerCreateChirps)
 
 	mux.HandleFunc("POST /api/users", apiCfg.handlerCreateUser)
+	mux.HandleFunc("PUT /api/users", apiCfg.handlerUpdateUser)
 	mux.HandleFunc("POST /api/login", apiCfg.handlerLogin)
+
+	mux.HandleFunc("POST /api/refresh", apiCfg.handlerRefresh)
+
+	mux.HandleFunc("POST /api/revoke", apiCfg.handlerRevoke)
 
 	server := &http.Server{
 		Addr:    ":8080",
