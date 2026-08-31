@@ -23,3 +23,10 @@ SET email = $2,
     updated_at = $4
 WHERE id = $1
 RETURNING *;
+
+-- name: UpdateChirpyRed :one
+UPDATE users
+SET is_chirpy_red = $2,
+    updated_at = $3
+WHERE id = $1
+RETURNING *;
