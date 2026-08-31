@@ -1,6 +1,7 @@
-# Chirpy Server
+# Chirpy Server (*Built using boot.dev guide*)
 
 A production-ready, RESTful HTTP API backend for a microblogging service built with Go, PostgreSQL, and SQLC.
+**Built using boot.dev guild**
 
 ---
 
